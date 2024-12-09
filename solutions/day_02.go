@@ -22,8 +22,9 @@ func Day02Part01() {
 	result := 0
 	for scanner.Scan() {
 		line := strings.Split(scanner.Text(), " ")
+		safe, _ := CheckSafety(line)
 
-		if CheckSafety(line) {
+		if safe {
 			result++
 		}
 	}
@@ -44,16 +45,18 @@ func Day02Part02() {
 	result := 0
 	for scanner.Scan() {
 		line := strings.Split(scanner.Text(), " ")
+		safe, problemIndex := CheckSafety(line)
 
-		if CheckSafety(line) {
+		if safe {
 			result++
 			continue
 		} else {
-			for i := range line {
-				// don't really like this solution but none of my other "smart" solutions seemed to work
+			// I only have to teste the string without the problem index and the two indices that preceed it
+			for i := problemIndex; i > problemIndex-3 && i >= 0; i-- {
 				dampenedSlice := slices.Delete(slices.Clone(line), i, i+1)
+				safe, _ := CheckSafety(dampenedSlice)
 
-				if CheckSafety(dampenedSlice) {
+				if safe {
 					result++
 					break
 				}
@@ -64,10 +67,11 @@ func Day02Part02() {
 	fmt.Println("Day 02 - Part 02:", result)
 }
 
-func CheckSafety(line []string) bool {
+func CheckSafety(line []string) (bool, int) {
 	previousNumber, _ := strconv.Atoi(line[0])
 	previousDifference := 0
 	safe := true
+	problemIndex := -1
 	for i := 1; i < len(line); i++ {
 		currentNumber, _ := strconv.Atoi(line[i])
 		currentDifference := previousNumber - currentNumber
@@ -78,6 +82,7 @@ func CheckSafety(line []string) bool {
 			(previousDifference < 0 && currentDifference > 0) ||
 			(previousDifference > 0 && currentDifference < 0) {
 			safe = false
+			problemIndex = i
 			break
 		}
 
@@ -85,5 +90,5 @@ func CheckSafety(line []string) bool {
 		previousDifference = currentDifference
 	}
 
-	return safe
+	return safe, problemIndex
 }
